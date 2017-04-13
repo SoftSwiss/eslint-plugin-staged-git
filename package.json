@@ -1,0 +1,22 @@
+{
+  "name": "eslint-plugin-staged-git",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SoftSwiss/eslint-plugin-staged-git.git"
+  },
+  "keywords": [
+    "eslint"
+  ],
+  "author": "SoftSwiss",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SoftSwiss/eslint-plugin-staged-git/issues"
+  },
+  "homepage": "https://github.com/SoftSwiss/eslint-plugin-staged-git#readme"
+}

@@ -1,26 +1,8 @@
 var lint = require('eslint'),
-    originalVerify = lint['linter']['verify'],
-    spawn = require( 'child_process' ).spawnSync;
+    spawn = require('child_process').spawnSync;
 
-
-lint['linter']['verify'] = function() {
-  var errors = originalVerify.apply(this, arguments),
-      allowedErrors = [],
-      stager = new GitStager()
-      filename = arguments[2]['filename'];
-
-  stager.calculateStages();
-
-  for (var i = 0; i < errors.length; i++) {
-    if (stager.isErrorAllowed(filename, errors[i])) {
-      allowedErrors.push(errors[i]);
-    };
-  }
-
-  return allowedErrors;
-}
-
-var GitStager = function() {
+var GitStager = function(branch) {
+  this.branch = branch;
   this.linesRefExp = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/;
 };
 
@@ -29,7 +11,7 @@ GitStager.prototype.calculateStages = function() {
 };
 
 GitStager.prototype.calculateRef = function() {
-  var result = spawn('git', ['merge-base', 'HEAD', 'origin/master']);
+  var result = spawn('git', ['merge-base', 'HEAD', this.branch]);
   this.ref = result.stdout.toString().replace(/\W/g, '');
 };
 
@@ -71,3 +53,26 @@ GitStager.prototype.stagedLines = function(filename) {
 GitStager.prototype.isStageMatched = function(stage, line) {
   return stage.from <= line && stage.to >= line;
 };
+
+var branch = process.env.COMPARE_WITH;
+
+if (branch) {
+  var originalVerify = lint['linter']['verify'],
+      stager = new GitStager(branch);
+
+  lint['linter']['verify'] = function() {
+    var errors = originalVerify.apply(this, arguments),
+        allowedErrors = [],
+        filename = arguments[2]['filename'];
+
+    stager.calculateStages();
+
+    for (var i = 0; i < errors.length; i++) {
+      if (stager.isErrorAllowed(filename, errors[i])) {
+        allowedErrors.push(errors[i]);
+      };
+    }
+
+    return allowedErrors;
+  }
+}

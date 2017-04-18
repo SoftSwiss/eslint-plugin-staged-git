@@ -51,7 +51,7 @@ GitStager.prototype.stagedLines = function(filename) {
 };
 
 GitStager.prototype.isStageMatched = function(stage, line) {
-  return stage.from <= line && stage.to >= line;
+  return stage.from <= line && stage.to > line;
 };
 
 var branch = process.env.COMPARE_WITH;

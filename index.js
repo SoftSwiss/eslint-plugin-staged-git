@@ -54,25 +54,22 @@ GitStager.prototype.isStageMatched = function(stage, line) {
   return stage.from <= line && stage.to > line;
 };
 
-var branch = process.env.COMPARE_WITH;
+var branch = process.env.COMPARE_WITH || 'master',
+    originalVerify = lint['linter']['verify'],
+    stager = new GitStager(branch);
 
-if (branch) {
-  var originalVerify = lint['linter']['verify'],
-      stager = new GitStager(branch);
+lint['linter']['verify'] = function() {
+  var errors = originalVerify.apply(this, arguments),
+      allowedErrors = [],
+      filename = arguments[2]['filename'];
 
-  lint['linter']['verify'] = function() {
-    var errors = originalVerify.apply(this, arguments),
-        allowedErrors = [],
-        filename = arguments[2]['filename'];
+  stager.calculateStages();
 
-    stager.calculateStages();
-
-    for (var i = 0; i < errors.length; i++) {
-      if (stager.isErrorAllowed(filename, errors[i])) {
-        allowedErrors.push(errors[i]);
-      };
-    }
-
-    return allowedErrors;
+  for (var i = 0; i < errors.length; i++) {
+    if (stager.isErrorAllowed(filename, errors[i])) {
+      allowedErrors.push(errors[i]);
+    };
   }
+
+  return allowedErrors;
 }
